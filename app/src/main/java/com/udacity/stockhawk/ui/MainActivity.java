@@ -28,20 +28,25 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
+public class MainActivity extends AppCompatActivity implements
+        LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener,
         StockAdapter.StockAdapterOnClickHandler {
 
     private static final int STOCK_LOADER = 0;
+
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
     RecyclerView stockRecyclerView;
+
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.swipe_refresh)
     SwipeRefreshLayout swipeRefreshLayout;
+
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.error)
     TextView error;
+
     private StockAdapter adapter;
 
     @Override
@@ -52,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
@@ -80,20 +84,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
             }
         }).attachToRecyclerView(stockRecyclerView);
-
-
     }
 
     private boolean networkUp() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
     @Override
     public void onRefresh() {
-
         QuoteSyncJob.syncImmediately(this);
 
         if (!networkUp() && adapter.getItemCount() == 0) {
@@ -118,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     void addStock(String symbol) {
         if (symbol != null && !symbol.isEmpty()) {
-
             if (networkUp()) {
                 swipeRefreshLayout.setRefreshing(true);
             } else {
@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (data.getCount() != 0) {
             error.setVisibility(View.GONE);
         }
+
         adapter.setCursor(data);
     }
 
@@ -158,8 +159,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
     private void setDisplayModeMenuItemIcon(MenuItem item) {
-        if (PrefUtils.getDisplayMode(this)
-                .equals(getString(R.string.pref_display_mode_absolute_key))) {
+        if (PrefUtils.getDisplayMode(this).equals(getString(R.string.pref_display_mode_absolute_key))) {
             item.setIcon(R.drawable.ic_percentage);
         } else {
             item.setIcon(R.drawable.ic_dollar);
@@ -171,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         getMenuInflater().inflate(R.menu.main_activity_settings, menu);
         MenuItem item = menu.findItem(R.id.action_change_units);
         setDisplayModeMenuItemIcon(item);
+
         return true;
     }
 
@@ -184,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             adapter.notifyDataSetChanged();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }

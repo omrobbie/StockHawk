@@ -27,7 +27,6 @@ public class StockProvider extends ContentProvider {
         return matcher;
     }
 
-
     @Override
     public boolean onCreate() {
         dbHelper = new DbHelper(getContext());
@@ -63,16 +62,14 @@ public class StockProvider extends ContentProvider {
                         null,
                         sortOrder
                 );
-
                 break;
+
             default:
                 throw new UnsupportedOperationException("Unknown URI:" + uri);
         }
 
         Context context = getContext();
-        if (context != null){
-            returnCursor.setNotificationUri(context.getContentResolver(), uri);
-        }
+        if (context != null) returnCursor.setNotificationUri(context.getContentResolver(), uri);
 
         return returnCursor;
     }
@@ -98,14 +95,13 @@ public class StockProvider extends ContentProvider {
                 );
                 returnUri = Contract.Quote.URI;
                 break;
+
             default:
                 throw new UnsupportedOperationException("Unknown URI:" + uri);
         }
 
         Context context = getContext();
-        if (context != null){
-            context.getContentResolver().notifyChange(uri, null);
-        }
+        if (context != null) context.getContentResolver().notifyChange(uri, null);
 
         return returnUri;
     }
@@ -115,9 +111,8 @@ public class StockProvider extends ContentProvider {
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
         int rowsDeleted;
 
-        if (null == selection) {
-            selection = "1";
-        }
+        if (null == selection) selection = "1";
+
         switch (uriMatcher.match(uri)) {
             case QUOTE:
                 rowsDeleted = db.delete(
@@ -125,7 +120,6 @@ public class StockProvider extends ContentProvider {
                         selection,
                         selectionArgs
                 );
-
                 break;
 
             case QUOTE_FOR_SYMBOL:
@@ -136,15 +130,14 @@ public class StockProvider extends ContentProvider {
                         selectionArgs
                 );
                 break;
+
             default:
                 throw new UnsupportedOperationException("Unknown URI:" + uri);
         }
 
         if (rowsDeleted != 0) {
             Context context = getContext();
-            if (context != null){
-                context.getContentResolver().notifyChange(uri, null);
-            }
+            if (context != null) context.getContentResolver().notifyChange(uri, null);
         }
 
         return rowsDeleted;
@@ -157,7 +150,6 @@ public class StockProvider extends ContentProvider {
 
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
-
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         switch (uriMatcher.match(uri)) {
@@ -178,15 +170,12 @@ public class StockProvider extends ContentProvider {
                 }
 
                 Context context = getContext();
-                if (context != null) {
-                    context.getContentResolver().notifyChange(uri, null);
-                }
+                if (context != null) context.getContentResolver().notifyChange(uri, null);
 
                 return returnCount;
+
             default:
                 return super.bulkInsert(uri, values);
         }
-
-
     }
 }

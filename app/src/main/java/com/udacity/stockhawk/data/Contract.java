@@ -4,8 +4,6 @@ package com.udacity.stockhawk.data;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import com.google.common.collect.ImmutableList;
-
 public final class Contract {
 
     static final String AUTHORITY = "com.udacity.stockhawk";
@@ -39,6 +37,7 @@ public final class Contract {
                 COLUMN_PERCENTAGE_CHANGE,
                 COLUMN_HISTORY
         };
+
         static final String TABLE_NAME = "quotes";
 
         public static Uri makeUriForStock(String symbol) {
@@ -48,8 +47,5 @@ public final class Contract {
         static String getStockFromUri(Uri queryUri) {
             return queryUri.getLastPathSegment();
         }
-
-
     }
-
 }
