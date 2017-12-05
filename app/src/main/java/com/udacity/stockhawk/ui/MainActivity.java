@@ -150,19 +150,19 @@ public class MainActivity extends AppCompatActivity implements
         adapter.setCursor(data);
     }
 
-
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         swipeRefreshLayout.setRefreshing(false);
         adapter.setCursor(null);
     }
 
-
     private void setDisplayModeMenuItemIcon(MenuItem item) {
         if (PrefUtils.getDisplayMode(this).equals(getString(R.string.pref_display_mode_absolute_key))) {
             item.setIcon(R.drawable.ic_percentage);
+            item.setTitle(R.string.pref_display_mode_percentage_key);
         } else {
             item.setIcon(R.drawable.ic_dollar);
+            item.setTitle(R.string.pref_display_mode_absolute_key);
         }
     }
 
