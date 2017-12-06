@@ -1,6 +1,7 @@
 package com.udacity.stockhawk.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -10,6 +11,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -23,6 +25,7 @@ import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
+import com.udacity.stockhawk.ui.stock_detail.DetailActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements
         StockAdapter.StockAdapterOnClickHandler {
 
     private static final int STOCK_LOADER = 0;
+    public static final String STOCK_SYMBOL = "STOCK_SYMBOL";
 
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
@@ -52,17 +56,23 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
+
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra(STOCK_SYMBOL, symbol);
+        startActivity(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
 
-        adapter = new StockAdapter(this, this);
-        stockRecyclerView.setAdapter(adapter);
-        stockRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setupEnv();
+        setupList();
+    }
+
+    private void setupEnv() {
+        ButterKnife.bind(this);
 
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
@@ -84,6 +94,13 @@ public class MainActivity extends AppCompatActivity implements
                 getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
             }
         }).attachToRecyclerView(stockRecyclerView);
+    }
+
+    private void setupList() {
+        adapter = new StockAdapter(this, this);
+        stockRecyclerView.setAdapter(adapter);
+        stockRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        stockRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
     private boolean networkUp() {
