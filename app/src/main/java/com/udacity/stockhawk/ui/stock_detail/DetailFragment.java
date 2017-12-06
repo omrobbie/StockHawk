@@ -15,9 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.common.collect.Lists;
 import com.udacity.stockhawk.R;
@@ -26,6 +30,7 @@ import com.udacity.stockhawk.data.Contract;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -151,8 +156,52 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // setup chart ui
         lc_chart.getDescription().setEnabled(false);
         lc_chart.getLegend().setEnabled(false);
-        lc_chart.getXAxis().setDrawLabels(false);
         lc_chart.getAxisRight().setDrawLabels(false);
         lc_chart.getAxisLeft().setTextColor(Color.WHITE);
+
+        // setup base chart line
+        setupYAxis(lc_chart.getAxisLeft());
+        setupXAxis(lc_chart.getXAxis());
+    }
+
+    private void setupYAxis(YAxis yAxis) {
+        yAxis.setDrawGridLines(false);
+        yAxis.setAxisLineColor(Color.WHITE);
+        yAxis.setAxisLineWidth(2f);
+        yAxis.setTextColor(Color.WHITE);
+    }
+
+    private void setupXAxis(XAxis xAxis) {
+        IAxisValueFormatter iAxisValueFormatter = new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(getDateFormat());
+                return simpleDateFormat.format(new Date((long) value));
+            }
+        };
+
+        xAxis.setGranularity(1f);
+        xAxis.setDrawGridLines(false);
+        xAxis.setAxisLineColor(Color.WHITE);
+        xAxis.setAxisLineWidth(2f);
+        xAxis.setTextColor(Color.WHITE);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        xAxis.setValueFormatter(iAxisValueFormatter);
+    }
+
+    private String getDateFormat() {
+        int days = getDateDiff();
+
+        if (days < 8) return "EEE";
+        else return "dd";
+    }
+
+    private int getDateDiff() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(datePeriod);
+
+        long diff = Calendar.getInstance().getTimeInMillis() - calendar.getTimeInMillis();
+        return (int) (diff / (1000 * 60 * 60 * 24)); // millisecond * second * minute * hour
     }
 }
