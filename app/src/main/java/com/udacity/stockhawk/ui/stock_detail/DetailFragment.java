@@ -3,6 +3,7 @@ package com.udacity.stockhawk.ui.stock_detail;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -138,12 +139,20 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             }
 
             LineDataSet lineDataSet = new LineDataSet(Lists.reverse(values), symbol);
-
+            lineDataSet.setValueTextColor(Color.GREEN);
+            lineDataSet.setValueTextSize(10f);
             iLineDataSets.add(lineDataSet);
         }
 
         LineData lineData = new LineData(iLineDataSets);
         lc_chart.setData(lineData);
         lc_chart.invalidate();
+
+        // setup chart ui
+        lc_chart.getDescription().setEnabled(false);
+        lc_chart.getLegend().setEnabled(false);
+        lc_chart.getXAxis().setDrawLabels(false);
+        lc_chart.getAxisRight().setDrawLabels(false);
+        lc_chart.getAxisLeft().setTextColor(Color.WHITE);
     }
 }
