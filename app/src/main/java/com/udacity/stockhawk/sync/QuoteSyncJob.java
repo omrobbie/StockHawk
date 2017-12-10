@@ -60,34 +60,41 @@ public final class QuoteSyncJob {
         return httpUrl.build();
     }
 
-    static ContentValues processStock(JSONObject jsonObject) throws JSONException {
+    static ContentValues processStock(Context context, JSONObject jsonObject) throws JSONException {
         String stockSymbol = jsonObject.getString("dataset_code");
-        JSONArray historicData = jsonObject.getJSONArray("data");
-
-        double price = historicData.getJSONArray(0).getDouble(1);
-        double change = price - historicData.getJSONArray(1).getDouble(1);
-        double percentChange = 100 * ((price - historicData.getJSONArray(1).getDouble(1)) / historicData.getJSONArray(1).getDouble(1));
-
-        historyBuilder = new StringBuilder();
-
-        for (int i = 0; i < historicData.length(); i++) {
-            JSONArray array = historicData.getJSONArray(i);
-
-            // Append date
-            historyBuilder.append(array.get(0));
-            historyBuilder.append(", ");
-
-            // Append close
-            historyBuilder.append(array.getDouble(1));
-            historyBuilder.append("\n");
-        }
-
         ContentValues quoteCV = new ContentValues();
-        quoteCV.put(Contract.Quote.COLUMN_SYMBOL, stockSymbol);
-        quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
-        quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
-        quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
-        quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
+
+        try {
+            JSONArray historicData = jsonObject.getJSONArray("data");
+
+            double price = historicData.getJSONArray(0).getDouble(1);
+            double change = price - historicData.getJSONArray(1).getDouble(1);
+            double percentChange = 100 * ((price - historicData.getJSONArray(1).getDouble(1)) / historicData.getJSONArray(1).getDouble(1));
+
+            historyBuilder = new StringBuilder();
+
+            for (int i = 0; i < historicData.length(); i++) {
+                JSONArray array = historicData.getJSONArray(i);
+
+                // Append date
+                historyBuilder.append(array.get(0));
+                historyBuilder.append(", ");
+
+                // Append close
+                historyBuilder.append(array.getDouble(1));
+                historyBuilder.append("\n");
+            }
+
+            quoteCV.put(Contract.Quote.COLUMN_SYMBOL, stockSymbol);
+            quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
+            quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
+            quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
+            quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            PrefUtils.removeStock(context, stockSymbol);
+            QuoteStatus.setStatus(context, QuoteStatus.STOCK_INVALID);
+        }
 
         return quoteCV;
     }
@@ -107,6 +114,7 @@ public final class QuoteSyncJob {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         Timber.e("OKHTTP", e.getMessage());
+                        QuoteStatus.setStatus(context, QuoteStatus.STOCK_SERVER_DOWN);
                     }
 
                     @Override
@@ -116,14 +124,16 @@ public final class QuoteSyncJob {
                             JSONObject jsonObject = new JSONObject(body);
 
                             if (jsonObject.has("dataset")) {
-                                ContentValues quotes = processStock(jsonObject.getJSONObject("dataset"));
+                                ContentValues quotes = processStock(context, jsonObject.getJSONObject("dataset"));
                                 context.getContentResolver().insert(Contract.Quote.URI, quotes);
                             } else {
                                 context.getContentResolver().insert(Contract.Quote.URI, null);
+                                QuoteStatus.setStatus(context, QuoteStatus.STOCK_SERVER_LIMIT);
                             }
 
                         } catch (JSONException ex) {
                             ex.printStackTrace();
+                            QuoteStatus.setStatus(context, QuoteStatus.STOCK_SERVER_INVALID);
                         }
                     }
                 });

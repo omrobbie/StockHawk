@@ -3,6 +3,7 @@
 
     <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
     <string name="pref_stocks_key">stocks</string>
+    <string name="pref_stocks_status_key">stocks_status_key</string>
 
     <string name="pref_display_mode_key">displayMode</string>
     <string name="pref_display_mode_default">@string/pref_display_mode_percentage_key</string>
