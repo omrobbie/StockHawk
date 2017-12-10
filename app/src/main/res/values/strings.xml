@@ -30,4 +30,11 @@
     <string name="toast_no_connectivity">Will refresh when network available.</string>
 
     <string name="content_add_stock">Add a new stock quote</string>
+
+    <string name="stock_invalid">Stock symbol is invalid!</string>
+    <string name="stock_server_invalid">Server is returning invalid information!</string>
+    <string name="stock_server_down">Server is not connected!</string>
+    <string name="stock_server_limit">Server has been reach the request limit!</string>
+    <string name="stock_unknown">Unknown stock!</string>
+    <string name="stock_error">Unknown error!</string>
 </resources>

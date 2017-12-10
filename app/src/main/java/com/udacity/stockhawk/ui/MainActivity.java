@@ -2,10 +2,12 @@ package com.udacity.stockhawk.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
+import com.udacity.stockhawk.sync.QuoteStatus;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 import com.udacity.stockhawk.ui.stock_detail.DetailActivity;
 
@@ -34,7 +37,8 @@ import timber.log.Timber;
 public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor>,
         SwipeRefreshLayout.OnRefreshListener,
-        StockAdapter.StockAdapterOnClickHandler {
+        StockAdapter.StockAdapterOnClickHandler,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int STOCK_LOADER = 0;
     public static final String STOCK_SYMBOL = "STOCK_SYMBOL";
@@ -69,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements
 
         setupEnv();
         setupList();
+
+        onRefresh();
     }
 
     private void setupEnv() {
@@ -76,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements
 
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
-        onRefresh();
 
         QuoteSyncJob.initialize(this);
         getSupportLoaderManager().initLoader(STOCK_LOADER, null, this);
@@ -204,5 +209,60 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        if (s.equals(getString(R.string.pref_stocks_status_key))) {
+            showQuoteStatus();
+        }
+    }
+
+    private void showQuoteStatus() {
+        int status = QuoteStatus.getStatus(this);
+        String status_message;
+
+        switch (status) {
+            case QuoteStatus.STOCK_INVALID:
+                status_message = getString(R.string.stock_invalid);
+                break;
+
+            case QuoteStatus.STOCK_SERVER_INVALID:
+                status_message = getString(R.string.stock_server_invalid);
+                break;
+
+            case QuoteStatus.STOCK_SERVER_DOWN:
+                status_message = getString(R.string.stock_server_down);
+                break;
+
+            case QuoteStatus.STOCK_SERVER_LIMIT:
+                status_message = getString(R.string.stock_server_limit);
+                break;
+
+            case QuoteStatus.STOCK_UNKNOWN:
+                status_message = getString(R.string.stock_unknown);
+                break;
+
+            default:
+                status_message = getString(R.string.stock_error);
+                break;
+        }
+
+        Toast.makeText(this, status_message, Toast.LENGTH_SHORT).show();
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    protected void onResume() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 }
