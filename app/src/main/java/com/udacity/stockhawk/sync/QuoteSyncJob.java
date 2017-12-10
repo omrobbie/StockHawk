@@ -114,10 +114,16 @@ public final class QuoteSyncJob {
                         try {
                             String body = response.body().string();
                             JSONObject jsonObject = new JSONObject(body);
-                            ContentValues quotes = processStock(jsonObject.getJSONObject("dataset"));
 
-                            context.getContentResolver().insert(Contract.Quote.URI, quotes);
+                            if (jsonObject.has("dataset")) {
+                                ContentValues quotes = processStock(jsonObject.getJSONObject("dataset"));
+                                context.getContentResolver().insert(Contract.Quote.URI, quotes);
+                            } else {
+                                context.getContentResolver().insert(Contract.Quote.URI, null);
+                            }
+
                         } catch (JSONException ex) {
+                            ex.printStackTrace();
                         }
                     }
                 });
